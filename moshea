@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח פגישות רסיבר בע"מ - משה אליהו</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .logo { display: block; margin: 0 auto 20px; max-width: 200px; }
+        h1, h2 { text-align: center; color: #333; }
+        .appointments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
+        .appointment-slot { border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9; }
+        .appointment-slot.booked { background-color: #ffebee; }
+        form { display: none; margin-top: 10px; }
+        input, button { width: 100%; padding: 5px; margin-top: 5px; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://mosheeliyahu.co.il/wp-content/uploads/2023/11/%D7%9E%D7%A9%D7%94-%D7%90%D7%9C%D7%99%D7%94%D7%95-%D7%9C%D7%95%D7%92%D7%95-e1700475817150.png" alt="משה אליהו לוגו" class="logo">
+        <h1>לוח פגישות</h1>
+        <div class="appointments-grid" id="appointmentsGrid"></div>
+    </div>
+
+    <script>
+        const appointmentSlots = [
+            '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+            '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'
+        ];
+
+        const appointments = {};
+
+        function createAppointmentSlots() {
+            const grid = document.getElementById('appointmentsGrid');
+            appointmentSlots.forEach(slot => {
+                const slotElement = document.createElement('div');
+                slotElement.className = 'appointment-slot';
+                slotElement.innerHTML = `
+                    <h3>${slot}</h3>
+                    <p id="status-${slot}">פנוי</p>
+                    <button onclick="bookAppointment('${slot}')">קבע פגישה</button>
+                    <form id="form-${slot}" style="display:none;">
+                        <input type="text" id="name-${slot}" placeholder="שם מלא" required>
+                        <input type="tel" id="phone-${slot}" placeholder="מספר טלפון" required>
+                        <button type="submit">אשר פגישה</button>
+                    </form>
+                `;
+                grid.appendChild(slotElement);
+
+                document.getElementById(`form-${slot}`).onsubmit = (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById(`name-${slot}`).value;
+                    const phone = document.getElementById(`phone-${slot}`).value;
+                    confirmAppointment(slot, name, phone);
+                };
+            });
+        }
+
+        function bookAppointment(slot) {
+            document.getElementById(`form-${slot}`).style.display = 'block';
+        }
+
+        function confirmAppointment(slot, name, phone) {
+            appointments[slot] = { name, phone };
+            updateSlotDisplay(slot);
+        }
+
+        function updateSlotDisplay(slot) {
+            const slotElement = document.querySelector(`.appointment-slot:has(h3:contains('${slot}'))`);
+            const statusElement = document.getElementById(`status-${slot}`);
+            const formElement = document.getElementById(`form-${slot}`);
+            const bookButton = slotElement.querySelector('button');
+
+            if (appointments[slot]) {
+                statusElement.textContent = `תפוס: ${appointments[slot].name}`;
+                slotElement.classList.add('booked');
+                formElement.style.display = 'none';
+                bookButton.style.display = 'none';
+            } else {
+                statusElement.textContent = 'פנוי';
+                slotElement.classList.remove('booked');
+                bookButton.style.display = 'block';
+            }
+        }
+
+        createAppointmentSlots();
+    </script>
+</body>
+</html>

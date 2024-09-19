@@ -3,90 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>לוח פגישות רסיבר בע"מ - משה אליהו</title>
+    <title>משה אליהו - סוכן ביטוח ופיננסים</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0; }
-        .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .logo { display: block; margin: 0 auto 20px; max-width: 200px; }
-        h1, h2 { text-align: center; color: #333; }
-        .appointments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 20px; }
-        .appointment-slot { border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9; }
-        .appointment-slot.booked { background-color: #ffebee; }
-        form { display: none; margin-top: 10px; }
-        input, button { width: 100%; padding: 5px; margin-top: 5px; }
-        button { background-color: #4CAF50; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; }
-        button:hover { background-color: #45a049; }
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700&display=swap');
+        body {
+            font-family: 'Heebo', sans-serif;
+        }
     </style>
 </head>
-<body>
-    <div class="container">
-        <img src="https://mosheeliyahu.co.il/wp-content/uploads/2023/11/%D7%9E%D7%A9%D7%94-%D7%90%D7%9C%D7%99%D7%94%D7%95-%D7%9C%D7%95%D7%92%D7%95-e1700475817150.png" alt="משה אליהו לוגו" class="logo">
-        <h1>לוח פגישות</h1>
-        <div class="appointments-grid" id="appointmentsGrid"></div>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <img src="https://mosheeliyahu.co.il/wp-content/uploads/2023/11/%D7%9E%D7%A9%D7%94-%D7%90%D7%9C%D7%99%D7%94%D7%95-%D7%9C%D7%95%D7%92%D7%95-e1700475817150.png" alt="לוגו משה אליהו - סוכן ביטוח ופיננסים" class="mx-auto mb-4" style="max-width: 300px;">
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4">מחשבון חסכון</h2>
+            <form id="investmentForm" class="space-y-4">
+                <div>
+                    <label for="targetAmount" class="block mb-1">סכום יעד (בש"ח):</label>
+                    <input type="number" id="targetAmount" class="w-full border rounded px-2 py-1" required min="0">
+                </div>
+                <div>
+                    <label for="investmentType" class="block mb-1">סוג השקעה:</label>
+                    <select id="investmentType" class="w-full border rounded px-2 py-1">
+                        <option value="monthly">הפקדה חודשית</option>
+                        <option value="oneTime">הפקדה חד פעמית</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="riskLevel" class="block mb-1">רמת סיכון:</label>
+                    <select id="riskLevel" class="w-full border rounded px-2 py-1">
+                        <option value="3">נמוכה (כ-3%)</option>
+                        <option value="4">בינונית (כ-4%)</option>
+                        <option value="8">גבוהה (כ-8%)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="years" class="block mb-1">מספר שנים:</label>
+                    <input type="number" id="years" class="w-full border rounded px-2 py-1" required min="1" max="100">
+                </div>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">חשב</button>
+            </form>
+            <div id="result" class="mt-4 font-bold"></div>
+        </div>
+
+        <div class="text-center">
+            <p class="text-xl mb-4">לפתיחת חסכון וייעוץ אישי:</p>
+            <p class="font-bold text-2xl mb-2">משה אליהו</p>
+            <p class="mb-4">נייד: 050-2070735</p>
+            <a href="https://wa.me/+9725070735" class="bg-green-500 text-white px-6 py-3 rounded-full text-lg hover:bg-green-600 inline-block">פתח שיחת WhatsApp</a>
+        </div>
     </div>
 
     <script>
-        const appointmentSlots = [
-            '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-            '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'
-        ];
-
-        const appointments = {};
-
-        function createAppointmentSlots() {
-            const grid = document.getElementById('appointmentsGrid');
-            appointmentSlots.forEach(slot => {
-                const slotElement = document.createElement('div');
-                slotElement.className = 'appointment-slot';
-                slotElement.innerHTML = `
-                    <h3>${slot}</h3>
-                    <p id="status-${slot}">פנוי</p>
-                    <button onclick="bookAppointment('${slot}')">קבע פגישה</button>
-                    <form id="form-${slot}" style="display:none;">
-                        <input type="text" id="name-${slot}" placeholder="שם מלא" required>
-                        <input type="tel" id="phone-${slot}" placeholder="מספר טלפון" required>
-                        <button type="submit">אשר פגישה</button>
-                    </form>
-                `;
-                grid.appendChild(slotElement);
-
-                document.getElementById(`form-${slot}`).onsubmit = (e) => {
-                    e.preventDefault();
-                    const name = document.getElementById(`name-${slot}`).value;
-                    const phone = document.getElementById(`phone-${slot}`).value;
-                    confirmAppointment(slot, name, phone);
-                };
-            });
-        }
-
-        function bookAppointment(slot) {
-            document.getElementById(`form-${slot}`).style.display = 'block';
-        }
-
-        function confirmAppointment(slot, name, phone) {
-            appointments[slot] = { name, phone };
-            updateSlotDisplay(slot);
-        }
-
-        function updateSlotDisplay(slot) {
-            const slotElement = document.querySelector(`.appointment-slot:has(h3:contains('${slot}'))`);
-            const statusElement = document.getElementById(`status-${slot}`);
-            const formElement = document.getElementById(`form-${slot}`);
-            const bookButton = slotElement.querySelector('button');
-
-            if (appointments[slot]) {
-                statusElement.textContent = `תפוס: ${appointments[slot].name}`;
-                slotElement.classList.add('booked');
-                formElement.style.display = 'none';
-                bookButton.style.display = 'none';
-            } else {
-                statusElement.textContent = 'פנוי';
-                slotElement.classList.remove('booked');
-                bookButton.style.display = 'block';
+        document.getElementById('investmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const targetAmount = parseFloat(document.getElementById('targetAmount').value);
+            const investmentType = document.getElementById('investmentType').value;
+            const riskLevel = parseFloat(document.getElementById('riskLevel').value) / 100;
+            const years = parseInt(document.getElementById('years').value);
+            
+            if (isNaN(targetAmount) || isNaN(years) || targetAmount <= 0 || years <= 0) {
+                document.getElementById('result').textContent = 'אנא הזן ערכים תקינים.';
+                return;
             }
-        }
-
-        createAppointmentSlots();
+            
+            let result;
+            if (investmentType === 'monthly') {
+                const monthlyPayment = (targetAmount * riskLevel / 12) / (Math.pow(1 + riskLevel / 12, years * 12) - 1);
+                result = `הפקדה חודשית נדרשת: ${monthlyPayment.toFixed(2)} ₪`;
+            } else {
+                const singlePayment = targetAmount / Math.pow(1 + riskLevel, years);
+                result = `הפקדה חד פעמית נדרשת: ${singlePayment.toFixed(2)} ₪`;
+            }
+            
+            document.getElementById('result').textContent = result;
+        });
     </script>
 </body>
 </html>
